@@ -150,7 +150,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsC</CompileAs>
-      <AdditionalIncludeDirectories>c:\Bailey\Programming\VCore\VCore;c:\Bailey\Programming\VGraphics\VGraphics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\Bailey\Programming\VCore\VCore;c:\Bailey\Programming\VGraphics\VGraphics;c:\Bailey\Programming\Resources\glew-2.1.0\include\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -158,8 +158,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>vCore.lib;vGraphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>c:\Bailey\Programming\VCore\VCore\x64\Release\;c:\Bailey\Programming\VGraphics\VGraphics\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openGL32.lib;glew32s.lib;vCore.lib;vGraphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>c:\Bailey\Programming\VCore\VCore\x64\Release\;c:\Bailey\Programming\VGraphics\VGraphics\x64\Release;c:\Bailey\Programming\Resources\glew-2.1.0\lib\Release\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

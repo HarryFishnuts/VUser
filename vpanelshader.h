@@ -13,5 +13,7 @@
 /* ========== SHADER FUNCTIONS					==========	*/
 void vUPanel_shaderRenderFunc(vPGShader shader, vPTR shaderdata, vPObject object,
 	vPGRenderable renderable);
+vPCHAR UGetPanelShaderVertexSource(void);
+vPCHAR UGetPanelShaderFragmentSource(void);
 
 #endif

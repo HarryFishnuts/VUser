@@ -5,8 +5,11 @@
 /* Includes all structs and defs, also all includes			*/
 
 /* ========== INCLUDES							==========	*/
+#define GLEW_STATIC
+#include "glew.h"
 #include "vuser.h"
 #include "vpanelshader.h"
+
 
 /* ========== CORE FUNCTIONS					==========	*/
 VUAPI void vUInitialize(void)
@@ -14,6 +17,13 @@ VUAPI void vUInitialize(void)
 	vZeroMemory(&_vuser, sizeof(vUserInternals));
 	_vuser.panelList = vCreateBuffer("vUPanel List", sizeof(vUPanel),
 		MAX_PANELS, NULL, NULL);
+
+	/* initialize GLEW */
+	glewInit();
+	
+	/* create panel shader */
+	_vuser.panelShader = vGCreateShader(NULL, vUPanel_shaderRenderFunc, NULL,
+		ZERO, NULL, NULL, NULL);
 }
 
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
