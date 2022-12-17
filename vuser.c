@@ -24,8 +24,14 @@ VUAPI void vUInitialize(void)
 	/* create panel shader */
 	_vuser.panelShader = 
 		vGCreateShader(vUPanel_shaderInitFunc, vUPanel_shaderRenderFunc,
-		NULL, ZERO, NULL, 
-		UGetPanelShaderVertexSource(), UGetPanelShaderFragmentSource());
+		NULL, ZERO,
+		UGetPanelShaderVertexSource(), UGetPanelShaderFragmentSource(), NULL);
+
+	/* create panel object and renderer */
+	_vuser.panelObject = vCreateObject(NULL);
+	_vuser.panelRenderer = vGCreateRenderable(_vuser.panelObject,
+		vCreateTransform(vCreatePosition(0.0f, 0.0f), 0.0f, 1.0f),
+		_vuser.panelShader, NULL, vGCreateRectCentered(0.1f, 0.1f), NULL);
 }
 
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
@@ -51,7 +57,15 @@ VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	return style;
 }
 
-VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin skin);
+VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin skin)
+{
+	vPUPanel panel = vBufferAdd(_vuser.panelList, NULL);
+	panel->panelType = vUPanelType_Rect;
+	panel->style = style;
+	panel->boundingBox = rect;
+	panel->skin = skin;
+	return panel;
+}
 
 VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin skin);
 
