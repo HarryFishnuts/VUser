@@ -19,7 +19,7 @@
 #define VUAPI __declspec(dllimport)
 #endif
 
-#define GUI_DEPTH			0.95
+#define GUI_DEPTH			5.0
 #define MAX_PANEL_STYLES	0x80
 #define MAX_PANELS			0x200
 
@@ -75,6 +75,8 @@ typedef struct vUserInternals
 
 	vHNDL panelList;	/* fixed list of all panels */
 
+	GLuint panelShaderMesh;
+	GLuint panelShaderVertexArray;
 	vPGShader panelShader;
 	vPObject  panelObject;
 	vPGRenderable panelRenderer;

@@ -11,6 +11,7 @@
 
 
 /* ========== SHADER FUNCTIONS					==========	*/
+void vUPanel_shaderInitFunc(vPGShader shader, vPTR shaderData, vPTR input);
 void vUPanel_shaderRenderFunc(vPGShader shader, vPTR shaderdata, vPObject object,
 	vPGRenderable renderable);
 vPCHAR UGetPanelShaderVertexSource(void);

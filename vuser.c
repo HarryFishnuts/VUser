@@ -22,8 +22,10 @@ VUAPI void vUInitialize(void)
 	glewInit();
 	
 	/* create panel shader */
-	_vuser.panelShader = vGCreateShader(NULL, vUPanel_shaderRenderFunc, NULL,
-		ZERO, NULL, NULL, NULL);
+	_vuser.panelShader = 
+		vGCreateShader(vUPanel_shaderInitFunc, vUPanel_shaderRenderFunc,
+		NULL, ZERO, NULL, 
+		UGetPanelShaderVertexSource(), UGetPanelShaderFragmentSource());
 }
 
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
