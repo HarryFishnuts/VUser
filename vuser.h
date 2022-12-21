@@ -19,7 +19,7 @@
 #define VUAPI __declspec(dllimport)
 #endif
 
-#define GUI_DEPTH			0
+#define GUI_DEPTH			-1.0f
 #define MAX_PANEL_STYLES	0x80
 #define MAX_PANELS			0x200
 

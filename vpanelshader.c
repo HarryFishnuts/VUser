@@ -41,8 +41,7 @@ static vPCHAR panelFragSrc =
 "\n"
 "void main()\n"
 "{\n"
-"\t//FragColor = texture(f_texture, f_textureUV) * f_color;\n"
-"\nFragColor = f_color;"
+"\tFragColor = texture(f_texture, f_textureUV) * f_color;\n"
 "\t/* dithering alogrithm */\n"
 "\tif (FragColor.a <= 0.97)\n"
 "\t{\n"
@@ -70,57 +69,95 @@ static vPCHAR panelFragSrc =
 
 
 /* ========== HELPER FUNCTIONS					==========	*/
+static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
+{
+	/* push projection matrix */
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+
+	/* translate projection */
+	glTranslatef(rectOverride.left, rectOverride.bottom,
+		0.0f);
+	float panelWidth = rectOverride.right - rectOverride.left;
+	float panelHeight = rectOverride.top - rectOverride.bottom;
+	glScalef(panelWidth, panelHeight, 1.0f);
+
+	/* clear texture matrix */
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+
+	/* setup model matrix */
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glTranslatef(0.0f, 0.0f, GUI_DEPTH);
+
+	/* setup render settings */
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+
+	/* default to use completely white texture */
+	glBindTexture(GL_TEXTURE_2D, _vuser.panelNoSkinTexture);
+
+	/* if image exists for panel, use that */
+	if (panel->skin != NULL)
+		glBindTexture(GL_TEXTURE_2D, panel->skin->glHandle);
+
+	/* bind to buffer and vertex array */
+	glBindVertexArray(_vuser.panelShaderVertexArray);
+	glBindBuffer(GL_ARRAY_BUFFER, _vuser.panelShaderMesh);
+
+	/* retrieve all data from gl matrix stack */
+	GLfloat projectionMatrix[0x10];
+	GLfloat modelMatrix[0x10];
+	glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
+
+	/* apply uniform values */
+	glUniform4fv(1, 1, &color);
+	glUniformMatrix4fv(2, 1, GL_FALSE, projectionMatrix);
+	glUniformMatrix4fv(3, 1, GL_FALSE, modelMatrix);
+
+	/* draw outer box */
+	glDrawArrays(GL_QUADS, 0, 4);
+
+	/* pop projection matrix */
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+}
 void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 	vPUPanel panel, vPTR input)
 {
+	vGRect inRect;
+
 	/* switch render method based on panel type */
 	switch (panel->panelType)
 	{
 	/* most basic case */
 	case vUPanelType_Rect:
 
-		/* clear texture matrix */
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
+		if (panel->style->borderWidth != 0.0f)
+		{
+			/* calculate inner rect */
+			inRect = panel->boundingBox;
+			inRect.left += panel->style->borderWidth;
+			inRect.bottom += panel->style->borderWidth;
+			inRect.top -= panel->style->borderWidth;
+			inRect.right -= panel->style->borderWidth;
 
-		/* setup model matrix */
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+			/* draw inner rect */
+			UPanelDrawRect(panel, panel->style->fillColor, inRect);
 
-		/* setup render settings */
-		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
+			/* draw outer rect */
+			UPanelDrawRect(panel, panel->style->borderColor, panel->boundingBox);
+		}
+		else
+		{
+			UPanelDrawRect(panel, panel->style->fillColor, panel->boundingBox);
+		}
 
-		/* default to use completely white texture */
-		glBindTexture(GL_TEXTURE_2D, _vuser.panelNoSkinTexture);
-
-		/* if image exists for panel, use that */
-		if (panel->skin != NULL)
-			glBindTexture(GL_TEXTURE_2D, panel->skin->glHandle);
-
-		/* no wrap texture */
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-		/* bind to buffer and vertex array */
-		glBindBuffer(GL_ARRAY_BUFFER, _vuser.panelShaderMesh);
-		glBindVertexArray(_vuser.panelShaderVertexArray);
-
-		/* retrieve all data from gl matrix stack */
-		GLfloat projectionMatrix[0x10];
-		GLfloat modelMatrix[0x10];
-		glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
-		glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
-
-		/* apply uniform values */
-		glUniform4fv(1, 1, &panel->style->borderColor);
-		glUniformMatrix4fv(2, 1, GL_FALSE, projectionMatrix);
-		glUniformMatrix4fv(3, 1, GL_FALSE, modelMatrix);
-
-		/* draw outer box */
-		glDrawArrays(GL_QUADS, 0, 4);
 		break;
 
 	default:
@@ -142,15 +179,15 @@ void vUPanel_shaderInitFunc(vPGShader shader, vPTR shaderData, vPTR input)
 	glGenBuffers(1, &_vuser.panelShaderMesh);
 	glBindBuffer(GL_ARRAY_BUFFER, _vuser.panelShaderMesh);
 	float baseRect[4][2] = { 
-		{ -1.0f, -1.0f }, 
-		{ -1.0f,  1.0f }, 
-		{  1.0f,  1.0f },
-		{  1.0f, -1.0f } 
+		{ 0.0f, 0.0f }, 
+		{ 0.0f, 1.0f }, 
+		{ 1.0f, 1.0f },
+		{ 1.0f, 0.0f } 
 	};
 	glBufferData(GL_ARRAY_BUFFER, sizeof(baseRect), baseRect, GL_STATIC_DRAW);
 
 	/* init vertex array */
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), NULL);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), NULL);
 	glEnableVertexAttribArray(0);
 
 	/* init noskin texture */
@@ -163,6 +200,10 @@ void vUPanel_shaderInitFunc(vPGShader shader, vPTR shaderData, vPTR input)
 	/* forced linear filter */
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	/* no wrap texture */
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 }
 
 void vUPanel_shaderRenderFunc(vPGShader shader, vPTR shaderdata, vPObject object,
