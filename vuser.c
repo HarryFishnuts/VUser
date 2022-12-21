@@ -17,9 +17,6 @@ VUAPI void vUInitialize(void)
 	vZeroMemory(&_vuser, sizeof(vUserInternals));
 	_vuser.panelList = vCreateBuffer("vUPanel List", sizeof(vUPanel),
 		MAX_PANELS, NULL, NULL);
-
-	/* initialize GLEW */
-	glewInit();
 	
 	/* create panel shader */
 	_vuser.panelShader = 

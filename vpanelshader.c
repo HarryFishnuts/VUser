@@ -41,8 +41,8 @@ static vPCHAR panelFragSrc =
 "\n"
 "void main()\n"
 "{\n"
-"\tFragColor = texture(f_texture, f_textureUV) * f_color;\n"
-"\n"
+"\t//FragColor = texture(f_texture, f_textureUV) * f_color;\n"
+"\nFragColor = f_color;"
 "\t/* dithering alogrithm */\n"
 "\tif (FragColor.a <= 0.97)\n"
 "\t{\n"
@@ -87,16 +87,10 @@ void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		glTranslatef(panel->boundingBox.left, panel->boundingBox.bottom,
-			-2.0f);
-		float panelWidth  = panel->boundingBox.right - panel->boundingBox.left;
-		float panelHeight = panel->boundingBox.top - panel->boundingBox.bottom;
-		glScalef(panelWidth, panelHeight, 1.0f);
-
-		/* enable textures */
+		/* setup render settings */
 		glActiveTexture(GL_TEXTURE0);
 		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 
 		/* default to use completely white texture */
@@ -127,28 +121,6 @@ void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 
 		/* draw outer box */
 		glDrawArrays(GL_QUADS, 0, 4);
-
-		/* transform model to draw inner box */
-		float borderWidth = panel->style->borderWidth;
-		glLoadIdentity();
-		glTranslatef(panel->boundingBox.left + borderWidth,
-			panel->boundingBox.bottom + borderWidth,
-			GUI_DEPTH + ((float)panel->layer / 255.0f));
-		glScalef(panelWidth - (borderWidth * 2.0f), 
-			panelHeight - (borderWidth * 2.0f), 1.0f);
-
-		/* retrieve all new data from gl matrix stack */
-		glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
-		glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
-
-		/* apply uniform values */
-		glUniform4fv(1, 1, &panel->style->fillColor);
-		glUniformMatrix4fv(2, 1, GL_FALSE, projectionMatrix);
-		glUniformMatrix4fv(3, 1, GL_FALSE, modelMatrix);
-
-		/* draw inner box */
-		glDrawArrays(GL_QUADS, 0, 4);
-
 		break;
 
 	default:
@@ -169,7 +141,12 @@ void vUPanel_shaderInitFunc(vPGShader shader, vPTR shaderData, vPTR input)
 
 	glGenBuffers(1, &_vuser.panelShaderMesh);
 	glBindBuffer(GL_ARRAY_BUFFER, _vuser.panelShaderMesh);
-	float baseRect[4][2] = { { 0, 0 }, { 0, 1 }, { 1, 1 }, { 1, 0} };
+	float baseRect[4][2] = { 
+		{ -1.0f, -1.0f }, 
+		{ -1.0f,  1.0f }, 
+		{  1.0f,  1.0f },
+		{  1.0f, -1.0f } 
+	};
 	glBufferData(GL_ARRAY_BUFFER, sizeof(baseRect), baseRect, GL_STATIC_DRAW);
 
 	/* init vertex array */
@@ -182,6 +159,10 @@ void vUPanel_shaderInitFunc(vPGShader shader, vPTR shaderData, vPTR input)
 	vBYTE texData[4] = { 255, 255, 255, 255 };
 	glTexImage2D(GL_TEXTURE_2D, ZERO, GL_RGBA, 1, 1, ZERO, GL_RGBA,
 		GL_UNSIGNED_BYTE, texData);
+
+	/* forced linear filter */
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
 void vUPanel_shaderRenderFunc(vPGShader shader, vPTR shaderdata, vPObject object,
