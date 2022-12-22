@@ -8,6 +8,7 @@
 #include "glew.h"
 #include "vpanelshader.h"
 #include <stdio.h>
+#include <math.h>
 
 
 /* ========== SHADER SOURCE						==========	*/
@@ -18,6 +19,7 @@ static vPCHAR panelVertSrc =
 "layout (location = 1) uniform vec4 v_color;\n"
 "layout (location = 2) uniform mat4 v_projMatrix;\n"
 "layout (location = 3) uniform mat4 v_modelMatrix;\n"
+"layout (location = 4) uniform mat4 v_textureMatrix;\n"
 "\n"
 "out vec4 f_color;\n"
 "out vec2 f_textureUV;\n"
@@ -25,8 +27,9 @@ static vPCHAR panelVertSrc =
 "void main()\n"
 "{\n"
 "\tf_color\t\t= v_color;\n"
-"\tf_textureUV = v_position;\n"
-"\tgl_Position = v_modelMatrix * v_projMatrix * vec4(v_position, 0.0, 1.0);\t\t\n"
+"\tvec4 tex4 = v_textureMatrix * vec4(v_position, 0.0, 1.0);\n"
+"\tf_textureUV = tex4.xy;\n"
+"\tgl_Position = v_projMatrix * v_modelMatrix * vec4(v_position, 0.0, 1.0);\t\t\n"
 "}\n"
 "";
 
@@ -69,15 +72,16 @@ static vPCHAR panelFragSrc =
 
 
 /* ========== HELPER FUNCTIONS					==========	*/
+static float counter = 0.0f;
 static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
 {
-	/* push projection matrix */
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
+	/* get old projection matrix */
+	float oldProjMatrix[16];
+	glGetFloatv(GL_PROJECTION_MATRIX, oldProjMatrix);
 
 	/* translate projection */
-	glTranslatef(rectOverride.left, rectOverride.bottom,
-		0.0f);
+	glMatrixMode(GL_PROJECTION);
+	glTranslatef(rectOverride.left, rectOverride.bottom, 0.0f);
 	float panelWidth = rectOverride.right - rectOverride.left;
 	float panelHeight = rectOverride.top - rectOverride.bottom;
 	glScalef(panelWidth, panelHeight, 1.0f);
@@ -86,11 +90,10 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 
-	/* setup model matrix */
+	/* clear model matrix */
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
 	glTranslatef(0.0f, 0.0f, GUI_DEPTH);
+	glLoadIdentity();
 
 	/* setup render settings */
 	glActiveTexture(GL_TEXTURE0);
@@ -123,9 +126,9 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
 	/* draw outer box */
 	glDrawArrays(GL_QUADS, 0, 4);
 
-	/* pop projection matrix */
+	/* load old projection matrix */
 	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
+	glLoadMatrixf(oldProjMatrix);
 }
 void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 	vPUPanel panel, vPTR input)
@@ -155,6 +158,7 @@ void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 		}
 		else
 		{
+			printf("reached\n");
 			UPanelDrawRect(panel, panel->style->fillColor, panel->boundingBox);
 		}
 
