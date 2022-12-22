@@ -87,6 +87,13 @@ vUserInternals _vuser;	/* INSTANCE */
 
 /* ========== CORE FUNCTIONS					==========	*/
 VUAPI void vUInitialize(void);
+
+VUAPI vGRect vUCreateRectCenteredOffset(vPosition offset, float width, float height);
+
+VUAPI vPosition vUScreenToPanelSpace(vPosition screenPos);
+VUAPI vPosition vUPanelToScreenSpace(vPosition panelPos);
+VUAPI vPosition vUMouseToPanelSpace(void);
+
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale);
 VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin skin);

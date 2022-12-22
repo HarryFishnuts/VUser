@@ -31,6 +31,58 @@ VUAPI void vUInitialize(void)
 		_vuser.panelShader, NULL, vGCreateRectCentered(0.1f, 0.1f), NULL);
 }
 
+VUAPI vGRect vUCreateRectCenteredOffset(vPosition offset, float width, float height)
+{
+	vGRect rect = vGCreateRectCentered(width, height);
+	rect.bottom += offset.y;
+	rect.top    += offset.y;
+	rect.left   += offset.x;
+	rect.right  += offset.x;
+	return rect;
+}
+
+
+VUAPI vPosition vUScreenToPanelSpace(vPosition screenPos)
+{
+	_vPGInternals pvgfx = vGGetInternals();
+	/* get window dimensions */
+	float windowHeight = pvgfx->window.dimensions.bottom - pvgfx->window.dimensions.top;
+	float windowWidth = pvgfx->window.dimensions.right - pvgfx->window.dimensions.left;
+
+	/* map to panel space */
+	float aspect = windowWidth / windowHeight;
+	float panelX = (screenPos.x / (windowWidth * (1.0f / (2.0f * aspect)))) - aspect;
+	float panelY = (screenPos.y / (windowHeight * 0.5f)) - 1.0f;
+
+	return vCreatePosition(panelX, panelY);
+}
+
+VUAPI vPosition vUPanelToScreenSpace(vPosition panelPos)
+{
+	float screenX = panelPos.x;
+	float screenY = panelPos.y;
+
+	_vPGInternals pvgfx = vGGetInternals();
+
+	/* get window dimensions */
+	float windowHeight = pvgfx->window.dimensions.bottom - pvgfx->window.dimensions.top;
+	float windowWidth = pvgfx->window.dimensions.right - pvgfx->window.dimensions.left;
+
+	/* map to screenspace */
+	float aspect = windowWidth / windowHeight;
+	float inverseaspect = windowHeight / windowWidth;
+	screenX = (screenX + aspect) * (windowWidth * 0.5f * inverseaspect);
+	screenY = (screenY + 1.0f) * (windowHeight * 0.5f);
+
+	return vCreatePosition(screenX, screenY);
+}
+
+VUAPI vPosition vUMouseToPanelSpace(void)
+{
+	return vUScreenToPanelSpace(vGScreenSpaceMousePos());
+}
+
+
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale)
 {
