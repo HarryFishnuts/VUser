@@ -24,6 +24,15 @@
 #define MAX_PANELS			0x200
 
 
+/* ========== CALLBACKS							==========	*/
+typedef (*vPFUPANELONMOUSEOVER)(struct vUPanel* panel);
+typedef (*vPFUPANELONMOUSEAWAY)(struct vUPanel* panel);
+typedef (*vPFUPANELMOUSEOVER)(struct vUPanel* panel);
+typedef (*vPFUPANELONMOUSECLICK)(struct vUPanel* panel);
+typedef (*vPFUPANELONMOUSEUNCLICK)(struct vUPanel* panel);
+typedef (*vPFUPANELMOUSECLICK)(struct vUPanel* panel);
+
+
 /* ========== ENUMS								==========	*/
 typedef enum vUPanelType
 {
@@ -41,6 +50,17 @@ typedef enum vUPanelTextFormat
 
 
 /* ========== STRUCTS							==========	*/
+typedef struct vUPanelMouseBehavior
+{
+	vPFUPANELMOUSEOVER  mouseOverFunc;
+	vPFUPANELMOUSECLICK mouseClickFunc;
+
+	vPFUPANELONMOUSEOVER    onMouseOverFunc;
+	vPFUPANELONMOUSEAWAY    onMouseAwayFunc;
+	vPFUPANELONMOUSECLICK   onMouseClickFunc;
+	vPFUPANELONMOUSEUNCLICK onMouseUnclickFunc;
+} vUPanelMouseBehavior, *vPUPanelMouseBehavior;
+
 typedef struct vUPanelStyle
 {
 	vGColor fillColor;
@@ -49,6 +69,8 @@ typedef struct vUPanelStyle
 	float   borderWidth;
 	float	buttonHoverScale;
 	float	buttonClickScale;
+
+	vUPanelMouseBehavior mouseBhv;
 } vUPanelStyle, *vPUPanelStyle;
 
 typedef struct vUPanel
@@ -66,6 +88,9 @@ typedef struct vUPanel
 
 	vPCHAR text;
 	float  textSize;
+
+	vBOOL mouseOver;
+	vBOOL mouseClick;
 } vUPanel, *vPUPanel;
 
 typedef struct vUserInternals
@@ -95,7 +120,8 @@ VUAPI vPosition vUPanelToScreenSpace(vPosition panelPos);
 VUAPI vPosition vUMouseToPanelSpace(void);
 
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
-	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale);
+	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale,
+	vPUPanelMouseBehavior mouseBehavior);
 VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin skin);
 VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin skin);
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,

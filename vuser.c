@@ -84,7 +84,8 @@ VUAPI vPosition vUMouseToPanelSpace(void)
 
 
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
-	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale)
+	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale,
+	vPUPanelMouseBehavior mouseBehavior)
 {
 	if (_vuser.panelStyleCount >= MAX_PANEL_STYLES)
 	{
@@ -99,6 +100,7 @@ VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	style->borderWidth = borderWidth;
 	style->buttonHoverScale = buttonHoverScale;
 	style->buttonClickScale = buttonClickScale;
+	vMemCopy(&style->mouseBhv, mouseBehavior, sizeof(vUPanelMouseBehavior));
 	
 	vLogInfoFormatted(__func__, "Created new panel style %p.",
 		style);
