@@ -131,9 +131,13 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
 	float panelHeight = rectOverride.top - rectOverride.bottom;
 	glScalef(panelWidth, panelHeight, 1.0f);
 
-	/* clear texture matrix */
+	/* setup texture matrix */
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
+
+	float textureSkinZoomScale = 1.0f / (float)(panel->skin->skinCount + 1);
+	glTranslatef(panel->renderSkin * textureSkinZoomScale, 0.0f, 0.0f);
+	glScalef(textureSkinZoomScale, 1.0f, 1.0f);
 
 	/* clear model matrix */
 	glMatrixMode(GL_MODELVIEW);
@@ -160,13 +164,17 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
 	/* retrieve all data from gl matrix stack */
 	GLfloat projectionMatrix[0x10];
 	GLfloat modelMatrix[0x10];
+	GLfloat textureMatrix[0x10];
 	glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
+	glGetFloatv(GL_TEXTURE_MATRIX, textureMatrix);
+
 
 	/* apply uniform values */
 	glUniform4fv(1, 1, &color);
 	glUniformMatrix4fv(2, 1, GL_FALSE, projectionMatrix);
 	glUniformMatrix4fv(3, 1, GL_FALSE, modelMatrix);
+	glUniformMatrix4fv(4, 1, GL_FALSE, textureMatrix);
 
 	/* draw outer box */
 	glDrawArrays(GL_QUADS, 0, 4);

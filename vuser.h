@@ -77,14 +77,13 @@ typedef struct vUPanel
 {
 	vUI8 layer;
 
-	struct vUPanel* parent;
-
 	vUPanelType panelType;
 	vUPanelTextFormat textFormat;
 	vPUPanelStyle style;
 
 	vGRect  boundingBox;
 	vPGSkin skin;
+	vUI8 renderSkin;
 
 	vPCHAR text;
 	float  textSize;
@@ -125,8 +124,8 @@ VUAPI vBOOL vUIsMouseOverPanel(vPUPanel panel);
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	vGColor textColor, float borderWidth, float buttonHoverWidth, float buttonClickWidth,
 	vPUPanelMouseBehavior mouseBehavior);
-VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin skin);
-VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin skin);
+VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin imageSkin);
+VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin imageSkin);
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,
 	vPCHAR textPointer);
 
