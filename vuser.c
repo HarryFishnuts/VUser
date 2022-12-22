@@ -41,6 +41,16 @@ VUAPI vGRect vUCreateRectCenteredOffset(vPosition offset, float width, float hei
 	return rect;
 }
 
+VUAPI vGRect vUCreateRectExpanded(vGRect reference, float expansion)
+{
+	vGRect newRect;
+	newRect.bottom = reference.bottom - expansion;
+	newRect.top = reference.top + expansion;
+	newRect.left = reference.left - expansion;
+	newRect.right = reference.right + expansion;
+	return newRect;
+}
+
 
 VUAPI vPosition vUScreenToPanelSpace(vPosition screenPos)
 {
@@ -82,6 +92,16 @@ VUAPI vPosition vUMouseToPanelSpace(void)
 	return vUScreenToPanelSpace(vGScreenSpaceMousePos());
 }
 
+VUAPI vBOOL vUIsMouseOverPanel(vPUPanel panel)
+{
+	vPosition mousePos = vUMouseToPanelSpace();
+	return
+		(mousePos.x < panel->boundingBox.right &&
+		 mousePos.x > panel->boundingBox.left  &&
+		 mousePos.y < panel->boundingBox.top   &&
+		 mousePos.y > panel->boundingBox.bottom);
+}
+
 
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale,
@@ -98,9 +118,10 @@ VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	style->borderColor = borderColor;
 	style->textColor = textColor;
 	style->borderWidth = borderWidth;
-	style->buttonHoverScale = buttonHoverScale;
-	style->buttonClickScale = buttonClickScale;
-	vMemCopy(&style->mouseBhv, mouseBehavior, sizeof(vUPanelMouseBehavior));
+	style->buttonHoverWidth = buttonHoverScale;
+	style->buttonClickWidth = buttonClickScale;
+	if (mouseBehavior != NULL)
+		vMemCopy(&style->mouseBhv, mouseBehavior, sizeof(vUPanelMouseBehavior));
 	
 	vLogInfoFormatted(__func__, "Created new panel style %p.",
 		style);
@@ -118,7 +139,12 @@ VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin skin)
 	return panel;
 }
 
-VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin skin);
+VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin skin)
+{
+	vPUPanel panel = vUCreatePanelRect(style, rect, skin);
+	panel->panelType = vUPanelType_Button;
+	return panel;
+}
 
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,
 	vPCHAR textPointer);

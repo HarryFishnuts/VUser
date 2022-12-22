@@ -72,7 +72,52 @@ static vPCHAR panelFragSrc =
 
 
 /* ========== HELPER FUNCTIONS					==========	*/
-static float counter = 0.0f;
+static void UPanelUpdateIterateFunc(vHNDL buffer, vUI16 index, vPUPanel panel, 
+	vPTR input)
+{
+	/* handle mouse over state */
+	vBOOL lastMouseOverState = panel->mouseOver;
+	panel->mouseOver = vUIsMouseOverPanel(panel);
+
+	if (panel->mouseOver != lastMouseOverState &&
+		panel->style->mouseBhv.onMouseOverFunc != NULL)
+	{
+		if (panel->mouseOver == TRUE)
+		{
+			panel->style->mouseBhv.onMouseOverFunc(panel);
+		}
+		else
+		{
+			panel->style->mouseBhv.onMouseAwayFunc(panel);
+		}
+	}
+		
+	/* handle click function */
+	vBOOL lastMouseClickState = panel->mouseClick;
+	panel->mouseClick = (GetKeyState(VK_LBUTTON) & 0x8000) && panel->mouseOver;
+	if (panel->mouseClick != lastMouseClickState &&
+		panel->style->mouseBhv.onMouseClickFunc != NULL)
+	{
+		if (panel->mouseClick == TRUE)
+		{
+			panel->style->mouseBhv.onMouseClickFunc(panel);
+		}
+		else
+		{
+			panel->style->mouseBhv.onMouseUnclickFunc(panel);
+		}
+	}
+	
+	/* call continuous functions */
+	if (panel->mouseClick == TRUE &&
+		panel->style->mouseBhv.mouseClickFunc != NULL)
+		panel->style->mouseBhv.mouseClickFunc(panel);
+
+	if (panel->mouseOver == TRUE &&
+		panel->style->mouseBhv.mouseOverFunc != NULL)
+		panel->style->mouseBhv.mouseOverFunc(panel);
+}
+
 static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
 {
 	/* get old projection matrix */
@@ -130,10 +175,12 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(oldProjMatrix);
 }
-void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
+
+static void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 	vPUPanel panel, vPTR input)
 {
-	vGRect inRect;
+	vGRect drawRect;
+	vGRect innerRect;
 
 	/* switch render method based on panel type */
 	switch (panel->panelType)
@@ -141,26 +188,44 @@ void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 	/* most basic case */
 	case vUPanelType_Rect:
 
-		if (panel->style->borderWidth != 0.0f)
+		/* calculate inner rect */
+		innerRect = vUCreateRectExpanded(panel->boundingBox,
+			-panel->style->borderWidth);
+
+		/* draw inner rect */
+		UPanelDrawRect(panel, panel->style->fillColor, innerRect);
+
+		/* draw outer rect */
+		UPanelDrawRect(panel, panel->style->borderColor, panel->boundingBox);
+
+		break;
+
+	case vUPanelType_Button:
+		
+		drawRect = panel->boundingBox;
+
+		/* calculate expanded/shrunk rect based on state */
+		if (panel->mouseOver == TRUE)
 		{
-			/* calculate inner rect */
-			inRect = panel->boundingBox;
-			inRect.left += panel->style->borderWidth;
-			inRect.bottom += panel->style->borderWidth;
-			inRect.top -= panel->style->borderWidth;
-			inRect.right -= panel->style->borderWidth;
-
-			/* draw inner rect */
-			UPanelDrawRect(panel, panel->style->fillColor, inRect);
-
-			/* draw outer rect */
-			UPanelDrawRect(panel, panel->style->borderColor, panel->boundingBox);
+			drawRect = vUCreateRectExpanded(drawRect,
+				panel->style->buttonHoverWidth);
 		}
-		else
+		if (panel->mouseClick == TRUE)
 		{
-			UPanelDrawRect(panel, panel->style->fillColor, panel->boundingBox);
+			drawRect = vUCreateRectExpanded(drawRect,
+				panel->style->buttonClickWidth);
 		}
 
+		/* calculate inner rect */
+		innerRect = vUCreateRectExpanded(drawRect,
+			-panel->style->borderWidth);
+
+		/* draw inner rect */
+		UPanelDrawRect(panel, panel->style->fillColor, innerRect);
+
+		/* draw outer rect */
+		UPanelDrawRect(panel, panel->style->borderColor, drawRect);
+		
 		break;
 
 	default:
@@ -212,7 +277,10 @@ void vUPanel_shaderInitFunc(vPGShader shader, vPTR shaderData, vPTR input)
 void vUPanel_shaderRenderFunc(vPGShader shader, vPTR shaderdata, vPObject object,
 	vPGRenderable renderable)
 {
-	/* loop all panel objects */
+	/* update all panel objects */
+	vBufferIterate(_vuser.panelList, UPanelUpdateIterateFunc, NULL);
+
+	/* draw all panel objects */
 	vBufferIterate(_vuser.panelList, UPanelShaderRenderIterateFunc, NULL);
 }
 

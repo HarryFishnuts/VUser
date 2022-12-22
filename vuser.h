@@ -67,8 +67,8 @@ typedef struct vUPanelStyle
 	vGColor borderColor;
 	vGColor textColor;
 	float   borderWidth;
-	float	buttonHoverScale;
-	float	buttonClickScale;
+	float	buttonHoverWidth;
+	float	buttonClickWidth;
 
 	vUPanelMouseBehavior mouseBhv;
 } vUPanelStyle, *vPUPanelStyle;
@@ -114,13 +114,16 @@ vUserInternals _vuser;	/* INSTANCE */
 VUAPI void vUInitialize(void);
 
 VUAPI vGRect vUCreateRectCenteredOffset(vPosition offset, float width, float height);
+VUAPI vGRect vUCreateRectExpanded(vGRect reference, float expansion);
 
 VUAPI vPosition vUScreenToPanelSpace(vPosition screenPos);
 VUAPI vPosition vUPanelToScreenSpace(vPosition panelPos);
 VUAPI vPosition vUMouseToPanelSpace(void);
 
+VUAPI vBOOL vUIsMouseOverPanel(vPUPanel panel);
+
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
-	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale,
+	vGColor textColor, float borderWidth, float buttonHoverWidth, float buttonClickWidth,
 	vPUPanelMouseBehavior mouseBehavior);
 VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin skin);
 VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin skin);
