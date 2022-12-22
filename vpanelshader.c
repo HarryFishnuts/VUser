@@ -92,8 +92,8 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
 
 	/* clear model matrix */
 	glMatrixMode(GL_MODELVIEW);
-	glTranslatef(0.0f, 0.0f, GUI_DEPTH);
 	glLoadIdentity();
+	glTranslatef(0.0f, 0.0f, GUI_DEPTH);
 
 	/* setup render settings */
 	glActiveTexture(GL_TEXTURE0);
@@ -158,7 +158,6 @@ void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 		}
 		else
 		{
-			printf("reached\n");
 			UPanelDrawRect(panel, panel->style->fillColor, panel->boundingBox);
 		}
 
