@@ -99,6 +99,8 @@ typedef struct vUserInternals
 
 	vHNDL panelList;	/* fixed list of all panels */
 
+	vPGSkin defaultTextSkin;
+
 	GLuint panelShaderMesh;
 	GLuint panelShaderVertexArray;
 	GLuint panelNoSkinTexture;

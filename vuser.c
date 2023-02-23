@@ -147,4 +147,11 @@ VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin ski
 }
 
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,
-	vPCHAR textPointer);
+	vPCHAR textPointer)
+{
+	vPUPanel panel = vUCreatePanelRect(style, rect, _vuser.defaultTextSkin);
+	panel->panelType = vUPanelType_Text;
+	panel->textFormat = format;
+	panel->text = textPointer;
+	return panel;
+}

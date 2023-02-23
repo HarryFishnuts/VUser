@@ -102,7 +102,7 @@ static void UPanelUpdateIterateFunc(vHNDL buffer, vUI16 index, vPUPanel panel,
 		{
 			panel->style->mouseBhv.onMouseClickFunc(panel);
 		}
-		else
+		else if (panel->style->mouseBhv.onMouseUnclickFunc != NULL)
 		{
 			panel->style->mouseBhv.onMouseUnclickFunc(panel);
 		}
@@ -118,7 +118,8 @@ static void UPanelUpdateIterateFunc(vHNDL buffer, vUI16 index, vPUPanel panel,
 		panel->style->mouseBhv.mouseOverFunc(panel);
 }
 
-static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
+static void UPanelDrawRect(vPUPanel panel, vGColor color, vUI16 skinOverride,
+	vGRect rectOverride)
 {
 	/* get old projection matrix */
 	float oldProjMatrix[16];
@@ -136,7 +137,7 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
 	glLoadIdentity();
 
 	float textureSkinZoomScale = 1.0f / (float)(panel->skin->skinCount + 1);
-	glTranslatef(panel->renderSkin * textureSkinZoomScale, 0.0f, 0.0f);
+	glTranslatef(skinOverride * textureSkinZoomScale, 0.0f, 0.0f);
 	glScalef(textureSkinZoomScale, 1.0f, 1.0f);
 
 	/* clear model matrix */
@@ -184,6 +185,45 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vGRect rectOverride)
 	glLoadMatrixf(oldProjMatrix);
 }
 
+static void UPanelDrawText(vPUPanel panel)
+{
+	if (panel->text == NULL) return;
+	vUI32 charCount = strlen(panel->text);
+
+	vUI32 charIndex = 0;
+	float drawX = panel->boundingBox.left + (panel->textSize * 0.5f);
+	float drawY = panel->boundingBox.top - (panel->textSize * 0.5f);
+
+	switch (panel->textFormat)
+	{
+	case vUPanelTextFormat_LeftAligned:
+		
+		for (; charIndex < charCount; charIndex++)
+		{
+			/* check for newline */
+			if (panel->text[charIndex] == '\n')
+			{
+				drawY -= panel->textSize;
+				continue;
+			}
+
+			/* calculate rect position and draw text */
+			vGRect charRect = vUCreateRectCenteredOffset(
+				vCreatePosition(drawX, drawY), panel->textSize, panel->textSize
+			);
+			UPanelDrawRect(panel, panel->style->textColor,
+				panel->text[charIndex] - ' ', charRect);
+
+			/* increment text position */
+			drawX += panel->textSize;
+		}
+		break;
+
+	default:
+		break;
+	}
+}
+
 static void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 	vPUPanel panel, vPTR input)
 {
@@ -201,10 +241,12 @@ static void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 			-panel->style->borderWidth);
 
 		/* draw inner rect */
-		UPanelDrawRect(panel, panel->style->fillColor, innerRect);
+		UPanelDrawRect(panel, panel->style->fillColor, panel->renderSkin, 
+			innerRect);
 
 		/* draw outer rect */
-		UPanelDrawRect(panel, panel->style->borderColor, panel->boundingBox);
+		UPanelDrawRect(panel, panel->style->borderColor, panel->renderSkin,
+			panel->boundingBox);
 
 		break;
 
@@ -229,11 +271,18 @@ static void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 			-panel->style->borderWidth);
 
 		/* draw inner rect */
-		UPanelDrawRect(panel, panel->style->fillColor, innerRect);
+		UPanelDrawRect(panel, panel->style->fillColor, panel->renderSkin,
+			innerRect);
 
 		/* draw outer rect */
-		UPanelDrawRect(panel, panel->style->borderColor, drawRect);
+		UPanelDrawRect(panel, panel->style->borderColor, panel->renderSkin,
+			drawRect);
 		
+		break;
+
+	case vUPanelType_Text:
+
+		UPanelDrawText(panel);
 		break;
 
 	default:
@@ -247,6 +296,10 @@ void vUPanel_shaderInitFunc(vPGShader shader, vPTR shaderData, vPTR input)
 {
 	/* init glew */
 	glewInit();
+
+	/* load default text skin */
+	_vuser.defaultTextSkin
+		= vGCreateSkinFromVCI("userfont.vci", FALSE, 127);
 
 	/* gen array and buffer */
 	glGenVertexArrays(1, &_vuser.panelShaderVertexArray);
