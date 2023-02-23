@@ -190,14 +190,14 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vUI16 skinOverride,
 
 static int UNextNewlineIndex(PCHAR str, int curIndex) {
 	int lineLen = strlen(str);
-	while (str[curIndex] != '\n' && curIndex <= lineLen) {
+	while (str[curIndex] != '\n' && curIndex < lineLen) {
 		curIndex++;
 	}
 	return curIndex;
 }
 
 static int ULastNewlineIndex(PCHAR str, int curindex) {
-	while (str[curindex] != '\n' && curindex != 0) {
+	while (str[curindex] != '\n' && curindex >= 0) {
 		curindex--;
 	}
 	return curindex;
@@ -280,7 +280,7 @@ static void UPanelDrawText(vPUPanel panel)
 			int lineSize = nextNewline - lastNewline;
 			int lineProgress = charIndex - lastNewline;
 			UPanelDrawRect(panel, panel->style->textColor,
-				panel->text[lastNewline + (lineSize - lineProgress - 1)] - ' ',
+				panel->text[lastNewline + (lineSize - lineProgress)] - ' ',
 				charRect);
 
 			/* increment text position */
