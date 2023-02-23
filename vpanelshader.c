@@ -288,6 +288,46 @@ static void UPanelDrawText(vPUPanel panel)
 		}
 		break;
 
+	case vUPanelTextFormat_Centered:
+
+		/* setup drawY position */
+		drawY = panel->boundingBox.top - (panel->textSize * 0.5f);
+
+		for (; charIndex < charCount; charIndex++)
+		{
+			/* check for newline */
+			if (panel->text[charIndex] == '\n')
+			{
+				drawY -= panel->textSize;
+				drawX = panel->boundingBox.right - (panel->textSize * 0.5f); /* reset x */
+				continue;
+			}
+
+			/* calculate line progress */
+			int nextNewline = UNextNewlineIndex(panel->text, charIndex);
+			int lastNewline = ULastNewlineIndex(panel->text, charIndex);
+			int lineSize = nextNewline - lastNewline;
+			int lineProgress = charIndex - lastNewline;
+
+			/* calculate line width and start pos */
+			float lineWidth = lineSize * (panel->textSize) - (panel->textSize * 0.5f);
+			float boxCenter = (panel->boundingBox.right + panel->boundingBox.left) * 0.5f;
+			float lineStartX = boxCenter - (lineWidth * 0.5f);
+
+			/* calculate X position */
+			drawX = lineStartX + (panel->textSize * lineProgress);
+
+			/* calculate rect position and draw text */
+			vGRect charRect = vUCreateRectCenteredOffset(
+				vCreatePosition(drawX, drawY), panel->textSize, panel->textSize
+			);
+
+			UPanelDrawRect(panel, panel->style->textColor,
+				panel->text[charIndex] - ' ',
+				charRect);
+		}
+		break;
+
 	default:
 		break;
 	}
