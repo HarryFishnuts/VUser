@@ -85,6 +85,7 @@ typedef struct vUPanel
 	vPGSkin skin;
 	vUI8 renderSkin;
 
+	CRITICAL_SECTION textLock;
 	vPCHAR text;
 	float  textSize;
 
@@ -130,5 +131,8 @@ VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin image
 VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin imageSkin);
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,
 	vPCHAR textPointer);
+VUAPI void vUPanelTextLock(vPUPanel panel);
+VUAPI void vUPanelTextUnlock(vPUPanel panel);
+VUAPI void vUDestroyPanel(vPUPanel panel);
 
 #endif

@@ -212,6 +212,8 @@ static void UPanelDrawText(vPUPanel panel)
 	float drawX;
 	float drawY;
 
+	EnterCriticalSection(&panel->textLock);
+
 	switch (panel->textFormat)
 	{
 	case vUPanelTextFormat_LeftAligned:
@@ -331,6 +333,8 @@ static void UPanelDrawText(vPUPanel panel)
 	default:
 		break;
 	}
+
+	LeaveCriticalSection(&panel->textLock);
 }
 
 static void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,

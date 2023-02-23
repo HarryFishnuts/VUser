@@ -150,8 +150,24 @@ VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFo
 	vPCHAR textPointer)
 {
 	vPUPanel panel = vUCreatePanelRect(style, rect, _vuser.defaultTextSkin);
+	InitializeCriticalSection(&panel->textLock);
 	panel->panelType = vUPanelType_Text;
 	panel->textFormat = format;
 	panel->text = textPointer;
 	return panel;
+}
+
+VUAPI void vUPanelTextLock(vPUPanel panel) {
+	EnterCriticalSection(&panel->textLock);
+}
+
+VUAPI void vUPanelTextUnlock(vPUPanel panel) {
+	LeaveCriticalSection(&panel->textLock);
+}
+
+VUAPI void vUDestroyPanel(vPUPanel panel) {
+	if (panel->panelType == vUPanelType_Text) {
+		DeleteCriticalSection(&panel->textLock);
+	}
+	vBufferRemove(_vuser.panelList, panel);
 }
