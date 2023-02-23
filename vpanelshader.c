@@ -7,6 +7,7 @@
 #define GLEW_STATIC
 #include "glew.h"
 #include "vpanelshader.h"
+#include "vgfx.h"
 #include <stdio.h>
 #include <math.h>
 
@@ -136,9 +137,11 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vUI16 skinOverride,
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 
-	float textureSkinZoomScale = 1.0f / (float)(panel->skin->skinCount + 1);
-	glTranslatef(skinOverride * textureSkinZoomScale, 0.0f, 0.0f);
-	glScalef(textureSkinZoomScale, 1.0f, 1.0f);
+	if (panel->skin != NULL) {
+		float textureSkinZoomScale = 1.0f / (float)(panel->skin->skinCount + 1);
+		glTranslatef(skinOverride * textureSkinZoomScale, 0.0f, 0.0f);
+		glScalef(textureSkinZoomScale, 1.0f, 1.0f);
+	}
 
 	/* clear model matrix */
 	glMatrixMode(GL_MODELVIEW);
@@ -185,25 +188,51 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vUI16 skinOverride,
 	glLoadMatrixf(oldProjMatrix);
 }
 
+static int UNextNewlineIndex(PCHAR str, int curIndex) {
+	int lineLen = strlen(str);
+	while (str[curIndex] != '\n' && curIndex <= lineLen) {
+		curIndex++;
+	}
+	return curIndex;
+}
+
+static int ULastNewlineIndex(PCHAR str, int curindex) {
+	while (str[curindex] != '\n' && curindex != 0) {
+		curindex--;
+	}
+	return curindex;
+}
+
 static void UPanelDrawText(vPUPanel panel)
 {
 	if (panel->text == NULL) return;
 	vUI32 charCount = strlen(panel->text);
 
 	vUI32 charIndex = 0;
-	float drawX = panel->boundingBox.left + (panel->textSize * 0.5f);
-	float drawY = panel->boundingBox.top - (panel->textSize * 0.5f);
+	float drawX;
+	float drawY;
 
 	switch (panel->textFormat)
 	{
 	case vUPanelTextFormat_LeftAligned:
 		
+		/* setup starting draw position */
+		drawX = panel->boundingBox.left + (panel->textSize * 0.5f);
+		drawY = panel->boundingBox.top - (panel->textSize * 0.5f);
+
 		for (; charIndex < charCount; charIndex++)
 		{
 			/* check for newline */
 			if (panel->text[charIndex] == '\n')
 			{
 				drawY -= panel->textSize;
+				drawX = panel->boundingBox.left + (panel->textSize * 0.5f); /* reset x */
+				continue;
+			}
+
+			/* check for tab */
+			if (panel->text[charIndex] == '\t') {
+				drawX += (panel->textSize) * 4;
 				continue;
 			}
 
@@ -216,6 +245,46 @@ static void UPanelDrawText(vPUPanel panel)
 
 			/* increment text position */
 			drawX += panel->textSize;
+		}
+		break;
+
+	case vUPanelTextFormat_RightAligned:
+
+		/* setup starting draw position */
+		drawX = panel->boundingBox.right - (panel->textSize * 0.5f);
+		drawY = panel->boundingBox.top - (panel->textSize * 0.5f);
+
+		for (; charIndex < charCount; charIndex++)
+		{
+			/* check for newline */
+			if (panel->text[charIndex] == '\n')
+			{
+				drawY -= panel->textSize;
+				drawX = panel->boundingBox.right - (panel->textSize * 0.5f); /* reset x */
+				continue;
+			}
+
+			/* check for tab */
+			if (panel->text[charIndex] == '\t') {
+				drawX -= (panel->textSize) * 4;
+				continue;
+			}
+
+			/* calculate rect position and draw text */
+			vGRect charRect = vUCreateRectCenteredOffset(
+				vCreatePosition(drawX, drawY), panel->textSize, panel->textSize
+			);
+
+			int nextNewline = UNextNewlineIndex(panel->text, charIndex);
+			int lastNewline = ULastNewlineIndex(panel->text, charIndex);
+			int lineSize = nextNewline - lastNewline;
+			int lineProgress = charIndex - lastNewline;
+			UPanelDrawRect(panel, panel->style->textColor,
+				panel->text[lastNewline + (lineSize - lineProgress - 1)] - ' ',
+				charRect);
+
+			/* increment text position */
+			drawX -= panel->textSize;
 		}
 		break;
 
