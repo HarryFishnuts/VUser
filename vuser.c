@@ -43,6 +43,14 @@ VUAPI void vUUnlock(void) {
 	LeaveCriticalSection(&_vuser.lock);
 }
 
+VUAPI float  vUGetRectWidth(vGRect rect) {
+	return rect.right - rect.left;
+}
+
+VUAPI float  vUGetRectHeight(vGRect rect) {
+	return rect.top - rect.bottom;
+}
+
 VUAPI vGRect vUCreateRectCenteredOffset(vPosition offset, float width, float height)
 {
 	vGRect rect = vGCreateRectCentered(width, height);
@@ -63,6 +71,109 @@ VUAPI vGRect vUCreateRectExpanded(vGRect reference, float expansion)
 	return newRect;
 }
 
+VUAPI vGRect vUCreateRectAlignedBorder(vURectAlignment alignment,
+	vGRect target, float border) {
+	float wAspect = vGGetWindowClientAspect();
+	return
+		vUCreateRectAlignedIn(
+			vGCreateRectCentered(wAspect * 2, 2.0),
+			alignment,
+			target,
+			border
+		);
+}
+
+VUAPI vGRect vUCreateRectAlignedIn(vGRect alignRect, vURectAlignment alignment,
+	vGRect target, float border) {
+	alignRect = vUCreateRectExpanded(alignRect, -border);
+	switch (alignment)
+	{
+		/* align top face with rect */
+	case vURectAlignment_Top:
+		return vGCreateRect(
+			target.left,
+			target.right,
+			alignRect.top - vUGetRectHeight(target),
+			alignRect.top
+		);
+		/* align bottom face with rect */
+	case vURectAlignment_Bottom:
+		return vGCreateRect(
+			target.left,
+			target.right,
+			alignRect.bottom,
+			alignRect.bottom + vUGetRectHeight(target)
+		);
+		/* align left face with rect */
+	case vURectAlignment_Left:
+		return vGCreateRect(
+			alignRect.left,
+			alignRect.left + vUGetRectWidth(target),
+			target.bottom,
+			target.top
+		);
+		/* align right face with rect */
+	case vURectAlignment_Right:
+		return vGCreateRect(
+			alignRect.right - vUGetRectWidth(target),
+			alignRect.right,
+			target.bottom,
+			target.top
+		);
+
+	default:
+		break;
+	}
+
+	/* on fail, return target */
+	return target;
+}
+
+VUAPI vGRect vUCreateRectAlignedOut(vGRect alignRect, vURectAlignment alignment,
+	vGRect target, float border) {
+	alignRect = vUCreateRectExpanded(alignRect, border);
+	switch (alignment)
+	{
+	/* align top face with rect */
+	case vURectAlignment_Top:
+		return vGCreateRect(
+			target.left,
+			target.right,
+			alignRect.bottom - vUGetRectHeight(target),
+			alignRect.bottom
+		);
+	/* align bottom face with rect */
+	case vURectAlignment_Bottom:
+		return vGCreateRect(
+			target.left,
+			target.right,
+			alignRect.top,
+			alignRect.top + vUGetRectHeight(target)
+		);
+	/* align left face with rect */
+	case vURectAlignment_Left:
+		return vGCreateRect(
+			alignRect.right,
+			alignRect.right + vUGetRectWidth(target),
+			target.bottom,
+			target.top
+		);
+	/* align right face with rect */
+	case vURectAlignment_Right:
+		return vGCreateRect(
+			alignRect.left - vUGetRectWidth(target),
+			alignRect.left,
+			target.bottom,
+			target.top
+		);
+
+	default:
+		break;
+	}
+
+	/* on fail, return target */
+	return target;
+}
 
 VUAPI vPosition vUScreenToPanelSpace(vPosition screenPos)
 {
@@ -184,15 +295,16 @@ VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin ski
 }
 
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,
-	vPCHAR textPointer)
+	float textSize, vPCHAR textPointer)
 {
 	EnterCriticalSection(&_vuser.lock);
 
 	vPUPanel panel = vUCreatePanelRect(style, rect, _vuser.defaultTextSkin);
 	InitializeCriticalSection(&panel->textLock);
-	panel->panelType = vUPanelType_Text;
-	panel->textFormat = format;
-	panel->text = textPointer;
+	panel->panelType	= vUPanelType_Text;
+	panel->textFormat	= format;
+	panel->text			= textPointer;
+	panel->textSize		= textSize;
 
 	LeaveCriticalSection(&_vuser.lock);
 	return panel;

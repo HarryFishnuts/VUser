@@ -49,6 +49,15 @@ typedef enum vUPanelTextFormat
 	vUPanelTextFormat_CenteredComplete
 } vUPanelTextFormat;
 
+typedef enum vURectAlignment {
+	/* ALIGNMENT IS THE FACE OF THE TARGET RECT				*/
+	/* THAT FACE WILL BE ALIGNED WITH THE ALIGNMENT RECT	*/
+	vURectAlignment_Top,
+	vURectAlignment_Bottom,
+	vURectAlignment_Left,
+	vURectAlignment_Right
+} vURectAlignment;
+
 
 /* ========== STRUCTS							==========	*/
 typedef struct vUPanelMouseBehavior
@@ -70,6 +79,7 @@ typedef struct vUPanelStyle
 	float   borderWidth;
 	float	buttonHoverWidth;
 	float	buttonClickWidth;
+	vBOOL   tintSkin;
 
 	vUPanelMouseBehavior mouseBhv;
 } vUPanelStyle, *vPUPanelStyle;
@@ -121,8 +131,16 @@ VUAPI void vUInitialize(void);
 VUAPI void vULock(void);
 VUAPI void vUUnlock(void);
 
+VUAPI float  vUGetRectWidth(vGRect rect);
+VUAPI float  vUGetRectHeight(vGRect rect);
 VUAPI vGRect vUCreateRectCenteredOffset(vPosition offset, float width, float height);
 VUAPI vGRect vUCreateRectExpanded(vGRect reference, float expansion);
+VUAPI vGRect vUCreateRectAlignedBorder(vURectAlignment alignment,
+	vGRect target, float border);
+VUAPI vGRect vUCreateRectAlignedIn(vGRect alignRect, vURectAlignment alignment,
+	vGRect target, float border);
+VUAPI vGRect vUCreateRectAlignedOut(vGRect alignRect, vURectAlignment alignment,
+	vGRect target, float border);
 
 VUAPI vPosition vUScreenToPanelSpace(vPosition screenPos);
 VUAPI vPosition vUPanelToScreenSpace(vPosition panelPos);
@@ -137,7 +155,7 @@ VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin imageSkin);
 VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin imageSkin);
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,
-	vPCHAR textPointer);
+	float textSize, vPCHAR textPointer);
 VUAPI void vUPanelTextLock(vPUPanel panel);
 VUAPI void vUPanelTextUnlock(vPUPanel panel);
 VUAPI void vUDestroyPanel(vPUPanel panel);
