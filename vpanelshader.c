@@ -291,9 +291,16 @@ static void UPanelDrawText(vPUPanel panel)
 		break;
 
 	case vUPanelTextFormat_Centered:
+	case vUPanelTextFormat_CenteredComplete:
 
 		/* setup drawY position */
-		drawY = panel->boundingBox.top - (panel->textSize * 0.5f);
+		if (panel->textFormat == vUPanelTextFormat_CenteredComplete) {
+			drawY = (panel->boundingBox.top + panel->boundingBox.bottom) * 0.5f;
+		}
+		else
+		{
+			drawY = panel->boundingBox.top - (panel->textSize * 0.5f);
+		}
 
 		for (; charIndex < charCount; charIndex++)
 		{

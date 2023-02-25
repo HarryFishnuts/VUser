@@ -9,6 +9,7 @@
 #include "glew.h"
 #include "vuser.h"
 #include "vpanelshader.h"
+#include <stdio.h>
 
 
 /* ========== CORE FUNCTIONS					==========	*/
@@ -102,6 +103,11 @@ VUAPI vBOOL vUIsMouseOverPanel(vPUPanel panel)
 		 mousePos.y > panel->boundingBox.bottom);
 }
 
+VUAPI vBOOL vUIsMouseClickingPanel(vPUPanel panel) {
+	volatile SHORT keyState = (GetAsyncKeyState(VK_LBUTTON) & 0x8000);
+	return (vUIsMouseOverPanel(panel) && keyState);
+}
+
 
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale,
@@ -113,7 +119,7 @@ VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 		return NULL;
 	}
 
-	vPUPanelStyle style = _vuser.panelStyleList + _vuser.panelStyleCount;
+	vPUPanelStyle style = &_vuser.panelStyleList[_vuser.panelStyleCount];
 	style->fillColor = fillColor;
 	style->borderColor = borderColor;
 	style->textColor = textColor;
@@ -126,6 +132,7 @@ VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	vLogInfoFormatted(__func__, "Created new panel style %p.",
 		style);
 	
+	_vuser.panelStyleCount++;
 	return style;
 }
 

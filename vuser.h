@@ -45,7 +45,8 @@ typedef enum vUPanelTextFormat
 {
 	vUPanelTextFormat_LeftAligned,
 	vUPanelTextFormat_RightAligned,
-	vUPanelTextFormat_Centered
+	vUPanelTextFormat_Centered,
+	vUPanelTextFormat_CenteredComplete
 } vUPanelTextFormat;
 
 
@@ -95,7 +96,7 @@ typedef struct vUPanel
 
 typedef struct vUserInternals
 {
-	vPUPanelStyle panelStyleList[MAX_PANEL_STYLES];
+	vUPanelStyle panelStyleList[MAX_PANEL_STYLES];
 	vUI32 panelStyleCount;
 
 	vHNDL panelList;	/* fixed list of all panels */
@@ -123,6 +124,7 @@ VUAPI vPosition vUPanelToScreenSpace(vPosition panelPos);
 VUAPI vPosition vUMouseToPanelSpace(void);
 
 VUAPI vBOOL vUIsMouseOverPanel(vPUPanel panel);
+VUAPI vBOOL vUIsMouseClickingPanel(vPUPanel panel);
 
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	vGColor textColor, float borderWidth, float buttonHoverWidth, float buttonClickWidth,
