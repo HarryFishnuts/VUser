@@ -205,14 +205,18 @@ static int ULastNewlineIndex(PCHAR str, int curindex) {
 
 static void UPanelDrawText(vPUPanel panel)
 {
-	if (panel->text == NULL) return;
+	EnterCriticalSection(&panel->textLock);
+
+	if (panel->text == NULL) {
+		LeaveCriticalSection(&panel->textLock);
+		return;
+	}
+
 	vUI32 charCount = strlen(panel->text);
 
 	vUI32 charIndex = 0;
 	float drawX;
 	float drawY;
-
-	EnterCriticalSection(&panel->textLock);
 
 	switch (panel->textFormat)
 	{
@@ -414,6 +418,8 @@ static void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 /* ========== SHADER FUNCTIONS					==========	*/
 void vUPanel_shaderInitFunc(vPGShader shader, vPTR shaderData, vPTR input)
 {
+	EnterCriticalSection(&_vuser.lock);
+
 	/* init glew */
 	glewInit();
 
@@ -453,16 +459,22 @@ void vUPanel_shaderInitFunc(vPGShader shader, vPTR shaderData, vPTR input)
 	/* no wrap texture */
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	LeaveCriticalSection(&_vuser.lock);
 }
 
 void vUPanel_shaderRenderFunc(vPGShader shader, vPTR shaderdata, vPObject object,
 	vPGRenderable renderable)
 {
+	EnterCriticalSection(&_vuser.lock);
+
 	/* update all panel objects */
 	vBufferIterate(_vuser.panelList, UPanelUpdateIterateFunc, NULL);
 
 	/* draw all panel objects */
 	vBufferIterate(_vuser.panelList, UPanelShaderRenderIterateFunc, NULL);
+
+	LeaveCriticalSection(&_vuser.lock);
 }
 
 vPCHAR UGetPanelShaderVertexSource(void)

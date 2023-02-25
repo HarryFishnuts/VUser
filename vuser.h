@@ -96,6 +96,8 @@ typedef struct vUPanel
 
 typedef struct vUserInternals
 {
+	CRITICAL_SECTION lock;
+
 	vUPanelStyle panelStyleList[MAX_PANEL_STYLES];
 	vUI32 panelStyleCount;
 

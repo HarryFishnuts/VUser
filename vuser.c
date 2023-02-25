@@ -10,6 +10,7 @@
 #include "vuser.h"
 #include "vpanelshader.h"
 #include <stdio.h>
+#include <Windows.h>
 
 
 /* ========== CORE FUNCTIONS					==========	*/
@@ -18,6 +19,8 @@ VUAPI void vUInitialize(void)
 	vZeroMemory(&_vuser, sizeof(vUserInternals));
 	_vuser.panelList = vCreateBuffer("vUPanel List", sizeof(vUPanel),
 		MAX_PANELS, NULL, NULL);
+
+	InitializeCriticalSection(&_vuser.lock);
 	
 	/* create panel shader */
 	_vuser.panelShader = 
@@ -95,17 +98,23 @@ VUAPI vPosition vUMouseToPanelSpace(void)
 
 VUAPI vBOOL vUIsMouseOverPanel(vPUPanel panel)
 {
+	EnterCriticalSection(&_vuser.lock);
 	vPosition mousePos = vUMouseToPanelSpace();
-	return
-		(mousePos.x < panel->boundingBox.right &&
-		 mousePos.x > panel->boundingBox.left  &&
-		 mousePos.y < panel->boundingBox.top   &&
-		 mousePos.y > panel->boundingBox.bottom);
+	BOOL state = (mousePos.x < panel->boundingBox.right&&
+		mousePos.x > panel->boundingBox.left &&
+		mousePos.y < panel->boundingBox.top&&
+		mousePos.y > panel->boundingBox.bottom);
+	LeaveCriticalSection(&_vuser.lock);
+	return state;
+		
 }
 
 VUAPI vBOOL vUIsMouseClickingPanel(vPUPanel panel) {
+	EnterCriticalSection(&_vuser.lock);
 	volatile SHORT keyState = (GetAsyncKeyState(VK_LBUTTON) & 0x8000);
-	return (vUIsMouseOverPanel(panel) && keyState);
+	BOOL state = (vUIsMouseOverPanel(panel) && keyState);
+	LeaveCriticalSection(&_vuser.lock);
+	return state;
 }
 
 
@@ -113,9 +122,12 @@ VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale,
 	vPUPanelMouseBehavior mouseBehavior)
 {
+	EnterCriticalSection(&_vuser.lock);
+
 	if (_vuser.panelStyleCount >= MAX_PANEL_STYLES)
 	{
 		vLogError(__func__, "Exceeded max style count.");
+		LeaveCriticalSection(&_vuser.lock);
 		return NULL;
 	}
 
@@ -133,34 +145,48 @@ VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 		style);
 	
 	_vuser.panelStyleCount++;
+
+	LeaveCriticalSection(&_vuser.lock);
 	return style;
 }
 
 VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin skin)
 {
+	EnterCriticalSection(&_vuser.lock);
+
 	vPUPanel panel = vBufferAdd(_vuser.panelList, NULL);
 	panel->panelType = vUPanelType_Rect;
 	panel->style = style;
 	panel->boundingBox = rect;
 	panel->skin = skin;
+
+	LeaveCriticalSection(&_vuser.lock);
 	return panel;
 }
 
 VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin skin)
 {
+	EnterCriticalSection(&_vuser.lock);
+
 	vPUPanel panel = vUCreatePanelRect(style, rect, skin);
 	panel->panelType = vUPanelType_Button;
+
+	LeaveCriticalSection(&_vuser.lock);
 	return panel;
 }
 
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,
 	vPCHAR textPointer)
 {
+	EnterCriticalSection(&_vuser.lock);
+
 	vPUPanel panel = vUCreatePanelRect(style, rect, _vuser.defaultTextSkin);
 	InitializeCriticalSection(&panel->textLock);
 	panel->panelType = vUPanelType_Text;
 	panel->textFormat = format;
 	panel->text = textPointer;
+
+	LeaveCriticalSection(&_vuser.lock);
 	return panel;
 }
 
@@ -173,8 +199,12 @@ VUAPI void vUPanelTextUnlock(vPUPanel panel) {
 }
 
 VUAPI void vUDestroyPanel(vPUPanel panel) {
+	EnterCriticalSection(&_vuser.lock);
+
 	if (panel->panelType == vUPanelType_Text) {
 		DeleteCriticalSection(&panel->textLock);
 	}
 	vBufferRemove(_vuser.panelList, panel);
+
+	LeaveCriticalSection(&_vuser.lock);
 }
