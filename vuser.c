@@ -35,6 +35,14 @@ VUAPI void vUInitialize(void)
 		_vuser.panelShader, NULL, vGCreateRectCentered(0.1f, 0.1f), NULL);
 }
 
+VUAPI void vULock(void) {
+	EnterCriticalSection(&_vuser.lock);
+}
+
+VUAPI void vUUnlock(void) {
+	LeaveCriticalSection(&_vuser.lock);
+}
+
 VUAPI vGRect vUCreateRectCenteredOffset(vPosition offset, float width, float height)
 {
 	vGRect rect = vGCreateRectCentered(width, height);

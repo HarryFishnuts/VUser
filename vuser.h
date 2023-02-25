@@ -118,6 +118,9 @@ vUserInternals _vuser;	/* INSTANCE */
 /* ========== CORE FUNCTIONS					==========	*/
 VUAPI void vUInitialize(void);
 
+VUAPI void vULock(void);
+VUAPI void vUUnlock(void);
+
 VUAPI vGRect vUCreateRectCenteredOffset(vPosition offset, float width, float height);
 VUAPI vGRect vUCreateRectExpanded(vGRect reference, float expansion);
 
