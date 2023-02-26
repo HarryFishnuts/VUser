@@ -174,6 +174,13 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vUI16 skinOverride,
 	glGetFloatv(GL_TEXTURE_MATRIX, textureMatrix);
 
 
+	/* set color to white based on skincolor flag */
+	if (panel->style->tintSkinFillColor == FALSE &&
+		panel->skin != NULL) 
+	{
+		color = vGCreateColorB(255, 255, 255, 255);
+	}
+
 	/* apply uniform values */
 	glUniform4fv(1, 1, &color);
 	glUniformMatrix4fv(2, 1, GL_FALSE, projectionMatrix);
@@ -368,8 +375,10 @@ static void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 		UPanelDrawRect(panel, panel->style->fillColor, panel->renderSkin, 
 			innerRect);
 
-		/* draw outer rect */
-		UPanelDrawRect(panel, panel->style->borderColor, panel->renderSkin,
+		/* draw outer rect (make copy without skin) */
+		vUPanel outerPanel = *panel;
+		outerPanel.skin = NULL;
+		UPanelDrawRect(&outerPanel, panel->style->borderColor, panel->renderSkin,
 			panel->boundingBox);
 
 		break;

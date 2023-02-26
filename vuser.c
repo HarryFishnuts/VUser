@@ -257,6 +257,7 @@ VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	style->borderWidth = borderWidth;
 	style->buttonHoverWidth = buttonHoverScale;
 	style->buttonClickWidth = buttonClickScale;
+	style->tintSkinFillColor = FALSE;
 	if (mouseBehavior != NULL)
 		vMemCopy(&style->mouseBhv, mouseBehavior, sizeof(vUPanelMouseBehavior));
 	

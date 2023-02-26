@@ -79,7 +79,7 @@ typedef struct vUPanelStyle
 	float   borderWidth;
 	float	buttonHoverWidth;
 	float	buttonClickWidth;
-	vBOOL   tintSkin;
+	vBOOL   tintSkinFillColor; /* whether to set skin tint as fill color */
 
 	vUPanelMouseBehavior mouseBhv;
 } vUPanelStyle, *vPUPanelStyle;
