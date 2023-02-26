@@ -38,7 +38,8 @@ typedef enum vUPanelType
 {
 	vUPanelType_Rect,
 	vUPanelType_Button,
-	vUPanelType_Text
+	vUPanelType_Text,
+	vUPanelType_TextButton
 } vUPanelType;
 
 typedef enum vUPanelTextFormat
@@ -99,6 +100,7 @@ typedef struct vUPanel
 	CRITICAL_SECTION textLock;
 	vPCHAR text;
 	float  textSize;
+	vBOOL  textBackGround;
 
 	vBOOL mouseOver;
 	vBOOL mouseClick;
@@ -161,7 +163,10 @@ VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin image
 VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin imageSkin,
 	vPUPanelMouseBehavior targetMouseBhv);
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,
-	float textSize, vPCHAR textPointer);
+	float textSize, vPCHAR textPointer, vBOOL useBackground);
+VUAPI vPUPanel vUCreatePanelTextButton(vPUPanelStyle style, vGRect rect,
+	vUPanelTextFormat format, float textSize, vPCHAR textPointer, vBOOL useBackground,
+	vPUPanelMouseBehavior targetMouseBehavior);
 VUAPI void vUPanelTextLock(vPUPanel panel);
 VUAPI void vUPanelTextUnlock(vPUPanel panel);
 VUAPI void vUDestroyPanel(vPUPanel panel);

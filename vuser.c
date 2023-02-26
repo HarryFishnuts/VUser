@@ -330,7 +330,7 @@ VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin ima
 }
 
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,
-	float textSize, vPCHAR textPointer)
+	float textSize, vPCHAR textPointer, vBOOL useBackground)
 {
 	EnterCriticalSection(&_vuser.lock);
 
@@ -340,6 +340,22 @@ VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFo
 	panel->textFormat	= format;
 	panel->text			= textPointer;
 	panel->textSize		= textSize;
+	panel->textBackGround = useBackground;
+
+	LeaveCriticalSection(&_vuser.lock);
+	return panel;
+}
+
+VUAPI vPUPanel vUCreatePanelTextButton(vPUPanelStyle style, vGRect rect,
+	vUPanelTextFormat format, float textSize, vPCHAR textPointer, vBOOL useBackground,
+	vPUPanelMouseBehavior targetMouseBehavior) {
+	EnterCriticalSection(&_vuser.lock);
+
+	vPUPanel panel = 
+		vUCreatePanelText(style, rect, format, textSize, textPointer, useBackground);
+	panel->panelType = vUPanelType_TextButton;
+	if (targetMouseBehavior != NULL)
+		vMemCopy(&panel->mouseBhv, targetMouseBehavior, sizeof(vUPanelMouseBehavior));
 
 	LeaveCriticalSection(&_vuser.lock);
 	return panel;

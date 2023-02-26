@@ -416,7 +416,71 @@ static void UPanelShaderRenderIterateFunc(vHNDL hndl, vUI16 index,
 
 	case vUPanelType_Text:
 
+		/* draw text */
 		UPanelDrawText(panel);
+
+		/* if text must have background, draw background */
+		if (panel->textBackGround == TRUE) {
+			/* create copy of panel with NULL instead of text skin */
+			vUPanel bgPanel = *panel;
+			bgPanel.skin = NULL;
+
+			/* draw inner box */
+			UPanelDrawRect(&bgPanel, panel->style->fillColor, panel->renderSkin,
+				vUCreateRectExpanded(panel->boundingBox, -panel->style->borderWidth)
+				);
+
+			/* draw outer box */
+			UPanelDrawRect(&bgPanel, panel->style->borderColor, panel->renderSkin,
+				panel->boundingBox);
+		}
+
+		break;
+
+	case vUPanelType_TextButton:
+
+		/* create copy of panel object */
+		drawRect = panel->boundingBox;
+
+		/* calculate expanded/shrunk rect based on state */
+		if (panel->mouseOver == TRUE)
+		{
+			drawRect = vUCreateRectExpanded(drawRect,
+				panel->style->buttonHoverWidth);
+		}
+		if (panel->mouseClick == TRUE)
+		{
+			drawRect = vUCreateRectExpanded(drawRect,
+				panel->style->buttonClickWidth);
+		}
+
+		/* calculate inner rect */
+		innerRect = vUCreateRectExpanded(drawRect,
+			-panel->style->borderWidth);
+
+		/* create copy of panel based on drawRect */
+		vUPanel panelCopy = *panel;
+		panelCopy.boundingBox = drawRect;
+		panelCopy.textSize
+			*= (vUGetRectWidth(drawRect) / vUGetRectWidth(panel->boundingBox));
+
+		/* draw text based on drawRect */
+		UPanelDrawText(&panelCopy);
+
+		if (panel->textBackGround == TRUE) {
+			vUPanel bgPanel = *panel;
+			bgPanel.skin = NULL;
+
+			/* draw inner rect */
+			UPanelDrawRect(&bgPanel, panel->style->fillColor, panel->renderSkin,
+				innerRect);
+
+			/* draw outer rect */
+			UPanelDrawRect(&bgPanel, panel->style->borderColor, panel->renderSkin,
+				drawRect);
+		}
+		
+
 		break;
 
 	default:
