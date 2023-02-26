@@ -272,8 +272,7 @@ VUAPI vBOOL vUIsMouseClickingPanel(vPUPanel panel) {
 
 
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
-	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale,
-	vPUPanelMouseBehavior mouseBehavior)
+	vGColor textColor, float borderWidth, float buttonHoverScale, float buttonClickScale)
 {
 	EnterCriticalSection(&_vuser.lock);
 
@@ -292,8 +291,6 @@ VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
 	style->buttonHoverWidth = buttonHoverScale;
 	style->buttonClickWidth = buttonClickScale;
 	style->tintSkinFillColor = FALSE;
-	if (mouseBehavior != NULL)
-		vMemCopy(&style->mouseBhv, mouseBehavior, sizeof(vUPanelMouseBehavior));
 	
 	vLogInfoFormatted(__func__, "Created new panel style %p.",
 		style);
@@ -318,12 +315,15 @@ VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin skin)
 	return panel;
 }
 
-VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin skin)
+VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin imageSkin,
+	vPUPanelMouseBehavior targetMouseBhv)
 {
 	EnterCriticalSection(&_vuser.lock);
 
-	vPUPanel panel = vUCreatePanelRect(style, rect, skin);
+	vPUPanel panel = vUCreatePanelRect(style, rect, imageSkin);
 	panel->panelType = vUPanelType_Button;
+	if (targetMouseBhv != NULL)
+		vMemCopy(&panel->mouseBhv, targetMouseBhv, sizeof(vUPanelMouseBehavior));
 
 	LeaveCriticalSection(&_vuser.lock);
 	return panel;

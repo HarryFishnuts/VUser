@@ -82,8 +82,6 @@ typedef struct vUPanelStyle
 	float	buttonHoverWidth;
 	float	buttonClickWidth;
 	vBOOL   tintSkinFillColor; /* whether to set skin tint as fill color */
-
-	vUPanelMouseBehavior mouseBhv;
 } vUPanelStyle, *vPUPanelStyle;
 
 typedef struct vUPanel
@@ -104,6 +102,8 @@ typedef struct vUPanel
 
 	vBOOL mouseOver;
 	vBOOL mouseClick;
+
+	vUPanelMouseBehavior mouseBhv;
 } vUPanel, *vPUPanel;
 
 typedef struct vUserInternals
@@ -156,10 +156,10 @@ VUAPI vBOOL vUIsMouseOverPanel(vPUPanel panel);
 VUAPI vBOOL vUIsMouseClickingPanel(vPUPanel panel);
 
 VUAPI vPUPanelStyle vUCreatePanelStyle(vGColor fillColor, vGColor borderColor,
-	vGColor textColor, float borderWidth, float buttonHoverWidth, float buttonClickWidth,
-	vPUPanelMouseBehavior mouseBehavior);
+	vGColor textColor, float borderWidth, float buttonHoverWidth, float buttonClickWidth);
 VUAPI vPUPanel vUCreatePanelRect(vPUPanelStyle style, vGRect rect, vPGSkin imageSkin);
-VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin imageSkin);
+VUAPI vPUPanel vUCreatePanelButton(vPUPanelStyle style, vGRect rect, vPGSkin imageSkin,
+	vPUPanelMouseBehavior targetMouseBhv);
 VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFormat format,
 	float textSize, vPCHAR textPointer);
 VUAPI void vUPanelTextLock(vPUPanel panel);
