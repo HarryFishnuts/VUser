@@ -51,6 +51,19 @@ VUAPI float  vUGetRectHeight(vGRect rect) {
 	return rect.top - rect.bottom;
 }
 
+VUAPI float  vUGetRectAspect(vGRect rect) {
+	return vUGetRectWidth(rect) / vUGetRectHeight(rect);
+}
+
+VUAPI vGRect vUMoveRect(vGRect rect, float mx, float my) {
+	return vGCreateRect(
+		rect.left + mx,
+		rect.right + mx,
+		rect.bottom + my,
+		rect.top + my
+	);
+}
+
 VUAPI vGRect vUCreateRectCenteredOffset(vPosition offset, float width, float height)
 {
 	vGRect rect = vGCreateRectCentered(width, height);
@@ -173,6 +186,27 @@ VUAPI vGRect vUCreateRectAlignedOut(vGRect alignRect, vURectAlignment alignment,
 
 	/* on fail, return target */
 	return target;
+}
+
+VUAPI vGRect vUCreateRectFromTable(vGRect tableRect, vUI32 xDivisions, vUI32 yDivisions,
+	float elementBorder, vUI32 xPos, vUI32 yPos) {
+	/* calculate box size */
+	float boxWidth  = vUGetRectWidth(tableRect) / (float)xDivisions;
+	float boxHeight = vUGetRectHeight(tableRect) / (float)yDivisions;
+
+	/* make box based on x and y pos */
+	vGRect boxRect = vGCreateRect(
+		boxWidth * xPos,
+		boxWidth * (xPos + 1),
+		boxHeight * (yPos),
+		boxHeight * (yPos + 1)
+	);
+	boxRect =
+		vUMoveRect(boxRect, tableRect.left, tableRect.bottom);
+	boxRect =
+		vUCreateRectExpanded(boxRect, -elementBorder);
+
+	return boxRect;
 }
 
 VUAPI vPosition vUScreenToPanelSpace(vPosition screenPos)
@@ -327,5 +361,12 @@ VUAPI void vUDestroyPanel(vPUPanel panel) {
 	}
 	vBufferRemove(_vuser.panelList, panel);
 
+	LeaveCriticalSection(&_vuser.lock);
+}
+
+VUAPI void vUDestroyPanelAndSkin(vPUPanel panel) {
+	EnterCriticalSection(&_vuser.lock);
+	vGDestroySkin(panel->skin);
+	vUDestroyPanel(panel);
 	LeaveCriticalSection(&_vuser.lock);
 }

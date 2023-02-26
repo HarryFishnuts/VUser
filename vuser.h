@@ -135,6 +135,8 @@ VUAPI void vUUnlock(void);
 
 VUAPI float  vUGetRectWidth(vGRect rect);
 VUAPI float  vUGetRectHeight(vGRect rect);
+VUAPI float  vUGetRectAspect(vGRect rect);
+VUAPI vGRect vUMoveRect(vGRect rect, float mx, float my);
 VUAPI vGRect vUCreateRectCenteredOffset(vPosition offset, float width, float height);
 VUAPI vGRect vUCreateRectExpanded(vGRect reference, float expansion);
 VUAPI vGRect vUCreateRectAlignedBorder(vURectAlignment alignment,
@@ -143,6 +145,8 @@ VUAPI vGRect vUCreateRectAlignedIn(vGRect alignRect, vURectAlignment alignment,
 	vGRect target, float border);
 VUAPI vGRect vUCreateRectAlignedOut(vGRect alignRect, vURectAlignment alignment,
 	vGRect target, float border);
+VUAPI vGRect vUCreateRectFromTable(vGRect tableRect, vUI32 xDivisions, vUI32 yDivisions,
+	float elementBorder, vUI32 xPos, vUI32 yPos);
 
 VUAPI vPosition vUScreenToPanelSpace(vPosition screenPos);
 VUAPI vPosition vUPanelToScreenSpace(vPosition panelPos);
@@ -161,5 +165,6 @@ VUAPI vPUPanel vUCreatePanelText(vPUPanelStyle style, vGRect rect, vUPanelTextFo
 VUAPI void vUPanelTextLock(vPUPanel panel);
 VUAPI void vUPanelTextUnlock(vPUPanel panel);
 VUAPI void vUDestroyPanel(vPUPanel panel);
+VUAPI void vUDestroyPanelAndSkin(vPUPanel panel);
 
 #endif
