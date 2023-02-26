@@ -25,12 +25,12 @@
 
 
 /* ========== CALLBACKS							==========	*/
-typedef (*vPFUPANELONMOUSEOVER)(struct vUPanel* panel);
-typedef (*vPFUPANELONMOUSEAWAY)(struct vUPanel* panel);
-typedef (*vPFUPANELMOUSEOVER)(struct vUPanel* panel);
-typedef (*vPFUPANELONMOUSECLICK)(struct vUPanel* panel);
-typedef (*vPFUPANELONMOUSEUNCLICK)(struct vUPanel* panel);
-typedef (*vPFUPANELMOUSECLICK)(struct vUPanel* panel);
+typedef (*vPFUPANELONMOUSEOVER)(struct vUPanel* panel, vPTR userInput);
+typedef (*vPFUPANELONMOUSEAWAY)(struct vUPanel* panel, vPTR userInput);
+typedef (*vPFUPANELMOUSEOVER)(struct vUPanel* panel, vPTR userInput);
+typedef (*vPFUPANELONMOUSECLICK)(struct vUPanel* panel, vPTR userInput);
+typedef (*vPFUPANELONMOUSEUNCLICK)(struct vUPanel* panel, vPTR userInput);
+typedef (*vPFUPANELMOUSECLICK)(struct vUPanel* panel, vPTR userInput);
 
 
 /* ========== ENUMS								==========	*/
@@ -62,6 +62,8 @@ typedef enum vURectAlignment {
 /* ========== STRUCTS							==========	*/
 typedef struct vUPanelMouseBehavior
 {
+	vPTR userInput;
+
 	vPFUPANELMOUSEOVER  mouseOverFunc;
 	vPFUPANELMOUSECLICK mouseClickFunc;
 

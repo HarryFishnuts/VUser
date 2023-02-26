@@ -79,17 +79,18 @@ static void UPanelUpdateIterateFunc(vHNDL buffer, vUI16 index, vPUPanel panel,
 	/* handle mouse over state */
 	vBOOL lastMouseOverState = panel->mouseOver;
 	panel->mouseOver = vUIsMouseOverPanel(panel);
+	vPTR userInput = panel->style->mouseBhv.userInput;
 
 	if (panel->mouseOver != lastMouseOverState &&
 		panel->style->mouseBhv.onMouseOverFunc != NULL)
 	{
 		if (panel->mouseOver == TRUE)
 		{
-			panel->style->mouseBhv.onMouseOverFunc(panel);
+			panel->style->mouseBhv.onMouseOverFunc(panel, userInput);
 		}
 		else
 		{
-			panel->style->mouseBhv.onMouseAwayFunc(panel);
+			panel->style->mouseBhv.onMouseAwayFunc(panel, userInput);
 		}
 	}
 		
@@ -101,22 +102,22 @@ static void UPanelUpdateIterateFunc(vHNDL buffer, vUI16 index, vPUPanel panel,
 	{
 		if (panel->mouseClick == TRUE)
 		{
-			panel->style->mouseBhv.onMouseClickFunc(panel);
+			panel->style->mouseBhv.onMouseClickFunc(panel, userInput);
 		}
 		else if (panel->style->mouseBhv.onMouseUnclickFunc != NULL)
 		{
-			panel->style->mouseBhv.onMouseUnclickFunc(panel);
+			panel->style->mouseBhv.onMouseUnclickFunc(panel, userInput);
 		}
 	}
 	
 	/* call continuous functions */
 	if (panel->mouseClick == TRUE &&
 		panel->style->mouseBhv.mouseClickFunc != NULL)
-		panel->style->mouseBhv.mouseClickFunc(panel);
+		panel->style->mouseBhv.mouseClickFunc(panel, userInput);
 
 	if (panel->mouseOver == TRUE &&
 		panel->style->mouseBhv.mouseOverFunc != NULL)
-		panel->style->mouseBhv.mouseOverFunc(panel);
+		panel->style->mouseBhv.mouseOverFunc(panel, userInput);
 }
 
 static void UPanelDrawRect(vPUPanel panel, vGColor color, vUI16 skinOverride,
