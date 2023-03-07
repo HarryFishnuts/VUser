@@ -147,7 +147,8 @@ static void UPanelDrawRect(vPUPanel panel, vGColor color, vUI16 skinOverride,
 	/* clear model matrix */
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(0.0f, 0.0f, GUI_DEPTH);
+	float fLayer = (float)(panel->layer / 255.0f);
+	glTranslatef(0.0f, 0.0f, GUI_DEPTH + fLayer);
 
 	/* setup render settings */
 	glActiveTexture(GL_TEXTURE0);
